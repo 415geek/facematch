@@ -5,7 +5,7 @@ import base64
 
 # 🔐 Your FaceCheck ID API token
 APITOKEN = 'C6bJH/K+14uXdBGTixe4uze6TJwgbl2Y8r1mKdQUcp4nnz7wyOj+v8672c2OrnJRBMz++ZsPMUs='  # <-- Replace this
-TESTING_MODE = True  # Set to False for real results (uses credits)
+TESTING_MODE = False  # Set to False for real results (uses credits)
 
 def search_by_face(image_path):
     site = 'https://facecheck.id'
