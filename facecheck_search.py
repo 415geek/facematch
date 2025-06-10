@@ -3,9 +3,9 @@ import requests
 import time
 import os
 
-# ✅ 从环境变量读取 API Key，确保安全
+# 从 Streamlit Secrets 中安全读取 API Key
 APITOKEN = os.getenv("FACECHECK_API_KEY")
-TESTING_MODE = False  # 设置为 True 不消耗额度但无法获取真实结果
+TESTING_MODE = False
 
 def search_by_face(image_path):
     site = 'https://facecheck.id'
@@ -13,11 +13,12 @@ def search_by_face(image_path):
     files = {'images': open(image_path, 'rb'), 'id_search': None}
 
     response = requests.post(site + '/api/upload_pic', headers=headers, files=files).json()
+
     if response.get('error'):
-        return f"{response['error']} ({response['code']})", None
+        return f"{response['error']} ({response.get('code')})", None
 
     id_search = response['id_search']
-    st.info(f"{response['message']} | ID: {id_search}")
+    st.info(f"{response['message']} | 搜索 ID: {id_search}")
 
     json_data = {
         'id_search': id_search,
@@ -29,18 +30,18 @@ def search_by_face(image_path):
     while True:
         response = requests.post(site + '/api/search', headers=headers, json=json_data).json()
         if response.get('error'):
-            return f"{response['error']} ({response['code']})", None
+            return f"{response['error']} ({response.get('code')})", None
         if response.get('output'):
-            return None, response['output']['items']
-        st.write(f'{response["message"]} | 进度: {response["progress"]}%')
+            return None, response['output'].get('items', [])
+        st.write(f'{response.get("message", "等待中")} | 进度: {response.get("progress", 0)}%')
         time.sleep(1)
 
-# ───────────────────────────────────────────────
+# 页面设置
 st.set_page_config(page_title="FaceMatch 人脸搜索", layout="centered")
 st.title("🔍 AI 人脸搜索引擎 by c8geek")
-st.write("Build with ❤️ in San Francisco")
+st.write("Made with ❤️ in San Francisco")
 
-# ✅ 使用条款与免责声明
+# ✅ 合规声明与使用条款
 with st.expander("📜 使用条款与免责声明", expanded=True):
     st.markdown("""
 我确认我已年满18岁，并同意以下内容：
@@ -53,8 +54,7 @@ with st.expander("📜 使用条款与免责声明", expanded=True):
 c8geek 不对搜索结果的准确性做任何保证。  
 我放弃就使用结果对 c8geek 提起任何诉讼的权利。
 
-勾选并点击“同意以上的使用条款”即表示我接受此协议。
-
+勾选并点击“同意以上的使用条款”即表示我接受此协议。  
 ❌ 如果您不同意，请立即退出网站。
     """)
 
@@ -69,10 +69,10 @@ else:
         temp_path = "uploaded_face.jpg"
         with open(temp_path, "wb") as f:
             f.write(uploaded_file.read())
-        st.image(temp_path, caption="已上传照片", width=300)
+        st.image(temp_path, caption="Uploaded Image", width=300)
 
         if st.button("🔍 开始搜索"):
-            with st.spinner("深网搜索中（社交媒体、政府记录等）..."):
+            with st.spinner("正在深网搜索中（社交平台、公开记录等）..."):
                 error, results = search_by_face(temp_path)
 
             if error:
@@ -81,19 +81,15 @@ else:
                 st.success("✅ 匹配结果如下：")
                 for idx, match in enumerate(results):
                     score = match.get("score", 0)
-    
-                    url_field = match.get("url")
-                    page_url = url_field.get("value", "") if isinstance(url_field, dict) else ""
-
+                    url_obj = match.get("url", {})
+                    page_url = url_obj.get("value", "") if isinstance(url_obj, dict) else ""
                     thumb_b64 = match.get("base64", "")
 
-    # ... 保持其余代码不变
-
-                    st.markdown(f"### 匹配结果 {idx + 1}")
+                    st.markdown(f"### Match {idx + 1}")
                     st.markdown(f"**匹配指数:** {score}")
-                    st.markdown(f"[🔗 查看来源页面]({page_url})")
+                    st.markdown(f"[🔗 匹配来源]({page_url}){{:target=\"_blank\"}}", unsafe_allow_html=True)
 
-                    if thumb_b64 and len(thumb_b64) > 100:
+                    if thumb_b64:
                         st.markdown(
                             f"""
                             <div style='
@@ -110,8 +106,8 @@ else:
                             unsafe_allow_html=True
                         )
                     else:
-                        st.image("https://via.placeholder.com/150?text=未返回图像", width=150, caption="图像不可用")
+                        st.image("https://via.placeholder.com/150?text=No+Image", width=150, caption="无预览图")
 
                     st.markdown("---")
             else:
-                st.warning("未找到匹配结果。")
+                st.warning("❌ 未找到匹配结果。")
