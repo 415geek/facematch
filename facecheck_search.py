@@ -37,8 +37,7 @@ def search_by_face(image_path):
 
 # ───────────────────────────────────────────────
 st.set_page_config(page_title="FaceMatch Search", layout="centered")
-st.title("🔍 AI 人脸搜索 by c8geek")
-st.write("Build with ❤️ in San Francisco")
+st.title("🔍 AIFACEMATCH - AI Face Search Engine")
 
 # ✅ Legal waiver
 with st.expander("📜 Terms of Use & Liability Waiver", expanded=True):
@@ -72,7 +71,7 @@ agreed = st.checkbox("✅ I have read and agree to the terms above")
 if not agreed:
     st.warning("⚠️ You must agree to the Terms before using this service.")
 else:
-    uploaded_file = st.file_uploader("📷 请上传一张清晰的人脸照片(jpg/png)", type=["jpg", "jpeg", "png"])
+    uploaded_file = st.file_uploader("📷 Upload a face photo (jpg/png)", type=["jpg", "jpeg", "png"])
 
     if uploaded_file:
         temp_path = "uploaded_face.jpg"
@@ -80,14 +79,14 @@ else:
             f.write(uploaded_file.read())
         st.image(temp_path, caption="Uploaded Image", width=300)
 
-        if st.button("🔍 开始匹配"):
-            with st.spinner("深网搜索中..."):
+        if st.button("🔍 AGREE AND SEARCH"):
+            with st.spinner("Searching FaceCheck..."):
                 error, results = search_by_face(temp_path)
 
             if error:
                 st.error(error)
             elif results:
-                st.success("✅ 匹配结果:")
+                st.success("✅ Matches Found:")
                 for idx, match in enumerate(results):
                     score = match.get("score", 0)
                     page_url = match.get("url", "")
@@ -95,8 +94,8 @@ else:
                     thumb_b64 = match.get("base64", "")
 
                     st.markdown(f"### Match {idx + 1}")
-                    st.markdown(f"**相似指数:** {score}")
-                    st.markdown(f"[🔗 查看匹配出处]({page_url})")
+                    st.markdown(f"**Confidence:** {score}")
+                    st.markdown(f"[🔗 View Match Page]({page_url})")
 
                     if image_url_direct:
                         st.image(image_url_direct, width=150, caption="Matched Image (URL)")
