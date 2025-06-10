@@ -37,7 +37,7 @@ def search_by_face(image_path):
 
 # ───────────────────────────────────────────────
 st.set_page_config(page_title="FaceMatch Search", layout="centered")
-st.title("🔍 AI 人脸搜索引擎")
+st.title("🔍 AI 人脸搜索引擎 by c8geek")
 st.write("Build with ❤️ in San Francisco")
 
 # ✅ Legal waiver
