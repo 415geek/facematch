@@ -2,6 +2,7 @@ import streamlit as st
 import requests
 import time
 import os
+import re
 
 # 读取 API 密钥（推荐通过 Streamlit Secrets 管理）
 APITOKEN = os.getenv("FACECHECK_API_KEY")
