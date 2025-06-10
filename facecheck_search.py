@@ -48,11 +48,21 @@ if "search_count" not in st.session_state:
     st.session_state.search_count = 0
 
 # ───────────── 手机号验证 ─────────────
+import re
+
+# ───────────── 手机号验证 ─────────────
 if not st.session_state.phone_verified:
-    phone = st.text_input("📱 请先输入您的手机号（仅用于防刷验证）", max_chars=15)
-    if phone and len(phone) >= 8:
+    phone = st.text_input("📱 请先输入您的手机号（仅用于防刷验证）", max_chars=20)
+
+    def is_valid_phone(p):
+        return bool(re.fullmatch(r"\d{10,15}", p))  # 至少10位，最多15位纯数字
+
+    if phone and is_valid_phone(phone):
         st.session_state.phone_verified = True
-        st.success("✅ 验证成功！请继续使用服务")
+        st.success("✅ 手机号格式有效，验证成功！")
+    elif phone:
+        st.error("❌ 手机号格式无效，请输入10位以上纯数字手机号（不含+或空格）")
+        st.stop()
     else:
         st.stop()
 
