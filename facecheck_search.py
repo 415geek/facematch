@@ -80,9 +80,14 @@ else:
             elif results:
                 st.success("✅ 匹配结果如下：")
                 for idx, match in enumerate(results):
-                    score = match.get("score", 0)
-                    page_url = match.get("url", {}).get("value", "")
-                    thumb_b64 = match.get("base64", "")
+    score = match.get("score", 0)
+    
+    url_field = match.get("url")
+    page_url = url_field.get("value", "") if isinstance(url_field, dict) else ""
+
+    thumb_b64 = match.get("base64", "")
+
+    # ... 保持其余代码不变
 
                     st.markdown(f"### 匹配结果 {idx + 1}")
                     st.markdown(f"**匹配指数:** {score}")
