@@ -32,7 +32,7 @@ def search_by_face(image_path):
             return f"{response['error']} ({response['code']})", None
         if response.get('output'):
             return None, response['output']['items']
-        st.write(f"{response['message"]} | Progress: {response['progress']}%")
+        st.write(f'{response["message"]} | Progress: {response["progress"]}%')
         time.sleep(1)
 
 # ───────────────────────────────────────────────
