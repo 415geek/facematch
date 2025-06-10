@@ -42,36 +42,28 @@ st.title("🔍 AIFACEMATCH - AI Face Search Engine")
 # ✅ Legal waiver
 with st.expander("📜 Terms of Use & Liability Waiver", expanded=True):
     st.markdown("""
-    I hereby affirm that I'm 18 years or older and I agree that as a result of this search:
+    我确认我已年满18岁，并同意以下内容：
 
-    - I WILL NOT CONFRONT a dangerous person  
-    - I WILL NOT HARASS a person  
-    - I WILL NOT UPLOAD photos of persons under the age of 18  
-    - I WILL NOT STALK a person  
-    - I WILL NOT BLACKMAIL a person  
-    - I WILL NOT USE any information in a way that would require AIFACEMATCH to report to any local government  
-    - I WILL NOT USE information to make decisions about employment, housing, credit, or insurance  
-    - I WILL NOT use this search for illegal activities  
-    - I AFFIRM that I am not a citizen or resident of a European Union country  
-    - I AFFIRM full legal responsibility for my use in accordance with my local laws  
+- 我不会使用本服务跟踪、骚扰、威胁、勒索或针对任何人  
+- 我不会上传18岁以下未成年人的照片  
+- 我不会将本服务用于任何非法或不道德用途  
+- 我不是欧盟成员国的公民或居民  
+- 我将对我使用本服务的行为承担全部法律责任  
 
-    **Compliance and Liability Declaration:**  
-    I accept full legal responsibility for my actions. AIFACEMATCH provides no warranty of accuracy.  
+c8geek 不对搜索结果的准确性做任何保证。  
+我放弃就使用结果对 c8geek 提起任何诉讼的权利。
 
-    **User Release and Waiver to Sue:**  
-    I waive all rights to sue AIFACEMATCH or its team for any outcomes arising from use of this service.  
+勾选并点击“同意以上的使用条款”即表示我接受此协议。
 
-    > By checking the box and clicking AGREE AND SEARCH, I agree to be legally bound by this agreement.
-
-    ❌ IF YOU DO NOT AGREE, YOU MUST DISCONTINUE USE IMMEDIATELY.
+❌ 如果您不同意，请立即退出网站。.
     """)
 
-agreed = st.checkbox("✅ I have read and agree to the terms above")
+agreed = st.checkbox("✅ 同意以上的使用条款")
 
 if not agreed:
-    st.warning("⚠️ You must agree to the Terms before using this service.")
+    st.warning("⚠️ 必须同意上述使用规则才能使用.")
 else:
-    uploaded_file = st.file_uploader("📷 Upload a face photo (jpg/png)", type=["jpg", "jpeg", "png"])
+    uploaded_file = st.file_uploader("📷 请上传一张清晰的人脸照片 (jpg/png)", type=["jpg", "jpeg", "png"])
 
     if uploaded_file:
         temp_path = "uploaded_face.jpg"
@@ -79,14 +71,14 @@ else:
             f.write(uploaded_file.read())
         st.image(temp_path, caption="Uploaded Image", width=300)
 
-        if st.button("🔍 AGREE AND SEARCH"):
-            with st.spinner("Searching FaceCheck..."):
+        if st.button("🔍 开始搜索"):
+            with st.spinner("深网搜索中(Social Media,Govt Record etc...)"):
                 error, results = search_by_face(temp_path)
 
             if error:
                 st.error(error)
             elif results:
-                st.success("✅ Matches Found:")
+                st.success("✅ 匹配结果:")
                 for idx, match in enumerate(results):
                     score = match.get("score", 0)
                     page_url = match.get("url", "")
@@ -94,8 +86,8 @@ else:
                     thumb_b64 = match.get("base64", "")
 
                     st.markdown(f"### Match {idx + 1}")
-                    st.markdown(f"**Confidence:** {score}")
-                    st.markdown(f"[🔗 View Match Page]({page_url})")
+                    st.markdown(f"**匹配指数:** {score}")
+                    st.markdown(f"[🔗 匹配来源]({page_url})")
 
                     if image_url_direct:
                         st.image(image_url_direct, width=150, caption="Matched Image (URL)")
