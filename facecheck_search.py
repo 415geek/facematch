@@ -37,27 +37,28 @@ def search_by_face(image_path):
             return None, resp['output']['items']
         st.write(f"{resp.get('message', '搜索中...')} | 进度: {resp.get('progress', 0)}%")
         time.sleep(1)
-
-# ───────────── 手机号验证 ─────────────
-if not st.session_state.phone_verified:
-    phone = st.text_input("📱 请先输入您的手机号（仅用于防刷验证）", max_chars=20)
-
-    def is_valid_phone(p):
-        return bool(re.fullmatch(r"\d{10,15}", p))  # 至少10位，最多15位纯数字
-
-    if phone and is_valid_phone(phone):
-        st.session_state.phone_verified = True
-        st.success("✅ 手机号格式有效，验证成功！")
-    elif phone:
-        st.error("❌ 手机号格式无效，请输入10位以上纯数字手机号（不含+或空格）")
-        st.stop()
-    else:
-        st.stop()
 # ─────────────────────────────────────────────
 st.set_page_config(page_title="FaceMatch AI 人脸搜索", layout="centered")
 st.title("🔍 AI 人脸搜索引擎 by c8geek")
 st.write("Build with ❤️ in San Francisco")
 
+# ───────────── 用户手机号验证 ─────────────
+if "phone_verified" not in st.session_state:
+    st.session_state.phone_verified = False
+if "search_count" not in st.session_state:
+    st.session_state.search_count = 0
+
+if not st.session_state.phone_verified:
+    phone = st.text_input("📱 请输入您的手机号（仅用于防刷验证）", max_chars=20)
+    if phone:
+        if is_valid_phone(phone):
+            st.session_state.phone_verified = True
+            st.success("✅ 手机号格式有效，验证通过！")
+        else:
+            st.error("❌ 手机号格式无效，请输入10~15位纯数字，不含+号或空格")
+            st.stop()
+    else:
+        st.stop()
 # 📜 使用条款
 with st.expander("📜 使用条款与免责声明", expanded=True):
     st.markdown("""
