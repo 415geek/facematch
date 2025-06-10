@@ -1,4 +1,4 @@
-import streamlit as st
+登陆import streamlit as st
 import requests
 import time
 import os
@@ -52,7 +52,7 @@ import re
 
 # ───────────── 手机号验证 ─────────────
 if not st.session_state.phone_verified:
-    phone = st.text_input("📱 请先输入您的手机号（仅用于防刷验证）", max_chars=20)
+    phone = st.text_input("📱 手机号码登录", max_chars=20)
 
     def is_valid_phone(p):
         return bool(re.fullmatch(r"\d{10,15}", p))  # 至少10位，最多15位纯数字
