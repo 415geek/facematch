@@ -82,9 +82,12 @@ else:
                 for idx, match in enumerate(results):
                     score = match.get("score", 0)
                     thumb_b64 = match.get("base64", "")
-                    url_dict = match.get("url", {})
-                    page_url = url_dict.get("value", "")
-
+                    raw_url = match.get("url", "")
+                    if isinstance(raw_url, dict):
+                        page_url = raw_url.get("value", "")
+                    else:
+                        page_url = raw_url
+ 
                     st.markdown(f"### Match {idx + 1}")
                     st.markdown(f"**匹配指数:** {score}")
                     if page_url:
