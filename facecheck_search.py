@@ -55,4 +55,4 @@ def search_by_face(image_path: str, topk: int = 50, demo: bool = False, shady_on
 
     # 3) 排序 & 截取 Top-K
     items = sorted(items, key=lambda x: x.get('score', 0), reverse=True)[:topk]
-    return None, itemsf
+    return None, items
