@@ -1,71 +1,83 @@
-# app.py — Streamlit 入口（FaceCheck Top-50）
+# app.py — FaceCheck Top-50 (gallery style)
 import os
 import streamlit as st
 from urllib.parse import urlparse
 from facecheck_search import search_by_face
 
-st.set_page_config(page_title="FaceMatch (FaceCheck API)", layout="centered")
-st.title("🔍 FaceMatch (FaceCheck API)")
-st.caption("关闭测试模式可获得与官网更接近的结果（会扣点）。")
-
-# ---- 侧边栏参数 ----
-demo = st.sidebar.toggle("测试模式 demo（不扣点，结果不准）", value=False)
-shady_only = st.sidebar.toggle("仅可疑站点（shady_only）", value=False,
-                               help="开启会过滤掉大量正常站点，一般不要开")
+st.set_page_config(page_title="AI人脸匹配", layout="wide")
+st.title("🔎 AI人脸匹配")
+st.caption("Developed By c8geek。")
+st.caption("上传一张清晰的人脸。点击缩略图即可跳转到来源页面。")
+# ---------- Sidebar（仅保留 Top-K 与去重） ----------
+st.sidebar.header("设置")
 topk = st.sidebar.slider("返回数量 Top-K", min_value=10, max_value=100, value=50, step=5)
 dedupe = st.sidebar.toggle("同域名去重（保留最高分）", value=True)
 
-# ---- 环境检查 ----
-if not os.getenv("FACECHECK_API_KEY"):
-    st.warning("未检测到 FACECHECK_API_KEY。请在本地环境变量或 Streamlit Secrets 中配置。")
+# ---------- Helpers ----------
+def normalize_url(raw_url):
+    if isinstance(raw_url, dict):
+        return raw_url.get("value", "")
+    return raw_url or ""
 
-# ---- 文件上传 ----
-f = st.file_uploader("上传一张清晰人脸照片（jpg/png）", type=["jpg", "jpeg", "png"])
+def normalize_b64(b64):
+    if not b64:
+        return ""
+    return b64 if b64.startswith("data:image") else f"data:image/webp;base64,{b64}"
+
+def render_thumb_link(col, b64, url, score, rank):
+    # 使用 HTML 控制固定尺寸与裁剪，点击图片新开标签页
+    if not b64:
+        return
+    html = f"""
+    <div style="text-align:center; margin-bottom:10px;">
+      <a href="{url}" target="_blank" rel="noopener">
+        <img src="{b64}" alt="thumb #{rank}"
+             style="width: 210px; height: 210px; object-fit: cover; border-radius: 8px; border: 1px solid #333;" />
+      </a>
+      <div style="margin-top:6px; font-size:13px; opacity:0.8;">#{rank} — {score:.1f}</div>
+    </div>
+    """
+    col.markdown(html, unsafe_allow_html=True)
+
+# ---------- Token 提示 ----------
+if not os.getenv("FACECHECK_API_KEY"):
+    st.warning("未检测到 FACECHECK_API_KEY，请在环境变量或 Streamlit Secrets 中配置。")
+
+# ---------- 上传与检索 ----------
+f = st.file_uploader("上传一张人脸照片（jpg/png）", type=["jpg", "jpeg", "png"])
 if f:
     tmp = "uploaded_face.jpg"
     with open(tmp, "wb") as w:
         w.write(f.getbuffer())
-    st.image(tmp, caption="Uploaded", width=260)
+    st.image(tmp, caption="Uploaded", width=300)
 
-    if st.button("开始搜索"):
+    if st.button("开始搜索", use_container_width=True):
         with st.spinner("搜索中…"):
-            err, items = search_by_face(tmp, topk=topk, demo=demo, shady_only=shady_only)
+            # 生产索引：demo=False；不过 UI 不再暴露这个开关
+            err, items = search_by_face(tmp, topk=topk, demo=False, shady_only=False)
 
         if err:
             st.error(err)
-            st.stop()
-
-        if not items:
+        elif not items:
             st.info("未找到匹配结果。")
-            st.stop()
+        else:
+            # 同域名去重（保留该域名最高分）
+            if dedupe:
+                best_by_domain = {}
+                for it in items:
+                    url = normalize_url(it.get("url"))
+                    domain = urlparse(url).netloc or "unknown"
+                    if domain not in best_by_domain or it.get("score", 0) > best_by_domain[domain].get("score", 0):
+                        best_by_domain[domain] = it
+                items = sorted(best_by_domain.values(), key=lambda x: x.get("score", 0), reverse=True)
 
-        # 可选：同域名去重（保留该域名下分数最高的一条）
-        if dedupe:
-            best_by_domain = {}
-            for it in items:
-                raw = it.get("url", "")
-                url = raw.get("value", "") if isinstance(raw, dict) else raw
-                domain = urlparse(url).netloc or "unknown"
-                if domain not in best_by_domain or it.get("score", 0) > best_by_domain[domain].get("score", 0):
-                    best_by_domain[domain] = it
-            items = sorted(best_by_domain.values(), key=lambda x: x.get("score", 0), reverse=True)
-
-        st.success(f"找到 {len(items)} 条候选")
-        cols = st.columns(5)
-
-        for i, it in enumerate(items[:topk], 1):
-            col = cols[(i - 1) % 5]
-            score = it.get("score", 0)
-
-            raw_url = it.get("url", "")
-            url = raw_url.get("value", "") if isinstance(raw_url, dict) else raw_url
-
-            b64 = it.get("base64", "")
-            if b64 and not b64.startswith("data:image"):
-                b64 = f"data:image/webp;base64,{b64}"
-
-            col.markdown(f"**#{i} — {score:.1f}**")
-            if b64:
-                col.markdown(f"![thumb]({b64})")
-            if url:
-                col.markdown(f"[来源链接]({url})")
+            st.success(f"找到 {min(len(items), topk)} 条候选")
+            # 5列网格展示可点击缩略图
+            cols = st.columns(5)
+            for i, it in enumerate(items[:topk], 1):
+                col = cols[(i - 1) % 5]
+                score = it.get("score", 0)
+                url = normalize_url(it.get("url"))
+                b64 = normalize_b64(it.get("base64", ""))
+                if url and b64:
+                    render_thumb_link(col, b64, url, score, i)
