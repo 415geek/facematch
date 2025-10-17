@@ -2,7 +2,7 @@ import requests
 
 # 🔍 FACE CHECK ID
 def query_facecheck(image_path):
-    api_key = "C6bJH/K+14uXdBGTixe4uze6TJwgbl2Y8r1mKdQUcp4nnz7wyOj+v8672c2OrnJRBMz++ZsPMUs="  # <-- replace with your key
+    api_key = "HYJVtNmB6VybJ7NSI+GVxhOY+LCBM+KrEuZQlSeoQmvLD3D+sbIdPT37vT7CkiccgHU7eWRFKj0="  # <-- replace with your key
     endpoint = "https://api.facecheck.id/v1/search"
     with open(image_path, "rb") as f:
         files = {"image": f}
