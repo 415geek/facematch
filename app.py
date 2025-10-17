@@ -1,4 +1,4 @@
-# app.py — FaceCheck Top-K (gallery style + LinkedIn button)
+# app.py — FaceCheck Top-K (gallery + progress bar + LinkedIn)
 import os
 import streamlit as st
 from urllib.parse import urlparse
@@ -8,7 +8,7 @@ from facecheck_search import search_by_face
 st.set_page_config(page_title="AI 人脸匹配", layout="wide")
 st.title("🔍 AI 人脸匹配")
 
-# 开发者信息 + LinkedIn 按钮（与文字等高等大）
+# 开发者信息 + LinkedIn 按钮
 st.markdown(
     """
     <div style='display:flex; align-items:center; font-size:15px; margin-top:-10px;'>
@@ -48,7 +48,6 @@ def normalize_b64(b64):
     return b64 if b64.startswith("data:image") else f"data:image/webp;base64,{b64}"
 
 def render_thumb_link(col, b64, url, score, rank):
-    # 点击缩略图新开页；固定裁剪，观感类似官网
     if not b64 or not url:
         return
     html = f"""
@@ -74,10 +73,28 @@ if f:
         w.write(f.getbuffer())
     st.image(tmp, caption="Uploaded", width=300)
 
+    # 进度条与状态文字占位
+    pbar = st.progress(0)
+    status = st.empty()
+
     if st.button("开始搜索", use_container_width=True):
+        def _cb(percent, message):
+            # 回调：更新进度条和提示文字
+            pbar.progress(int(percent))
+            status.info(f"进度 {int(percent)}% · {message}")
+
         with st.spinner("搜索中…"):
-            # 生产索引：demo=False；不在 UI 暴露此开关
-            err, items = search_by_face(tmp, topk=topk, demo=False, shady_only=False)
+            err, items = search_by_face(
+                tmp,
+                topk=topk,
+                demo=False,          # 生产索引（不在 UI 暴露）
+                shady_only=False,    # 一般不要开
+                progress_cb=_cb      # 传入进度回调
+            )
+
+        # 搜索结束后清空进度组件
+        pbar.empty()
+        status.empty()
 
         if err:
             st.error(err)
