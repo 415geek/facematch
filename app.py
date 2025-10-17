@@ -12,7 +12,7 @@ st.title("🔍 AI 人脸匹配")
 st.markdown(
     """
     <div style='display:flex; align-items:center; font-size:15px; margin-top:-10px;'>
-        <span>Developed by <b>c8geek.</b></span>
+        <span>Developed by <b>c8geek</b></span>
         <a href="https://www.linkedin.com/in/lingyu-maxwell-lai" target="_blank" style="
             text-decoration:none;
             margin-left:8px;
