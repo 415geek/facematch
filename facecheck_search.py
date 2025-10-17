@@ -53,6 +53,9 @@ def search_by_face(image_path: str, topk: int = 50, demo: bool = False, shady_on
             break
         time.sleep(1)
 
-    # 3) 排序 & 截取 Top-K
-    items = sorted(items, key=lambda x: x.get('score', 0), reverse=True)[:topk]
-    return None, items
+   # 3) 按 score 降序并截取 Top-K
+items = js['output'].get('items', [])
+items = sorted(items, key=lambda x: x.get('score', 0), reverse=True)[:topk]
+
+# 返回（items 可能为空，但不应抛异常）
+return None, items
